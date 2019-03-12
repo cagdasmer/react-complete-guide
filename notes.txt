@@ -1,0 +1,43 @@
+spread : add new elements to an existing entity (list, object properties, etc.)
+rest ~= **args
+
+Destructuring : extracting elements
+	Array : [a,b] = ['Gi', 'There']
+	Object : {name} = {name: 'Max', age:26} (age is undefined)
+	
+____________REACT________________
+return (
+      // This isn't actually HTML, it's JSX
+          // className instead of class because this still is a JS file
+      <div className="App">
+        <h1>Hi, I'm Anan React App</h1>
+      </div>
+    );
+	
+// The above code block will converted to the line below
+                            // type    props              // content
+    # return React.createElement('div', {className: 'App'}, React.createElement('h1', null, 'Hi I\'m Anan React App'));
+
+JSX must contain one root element. (e.g. <div> ... </div>) (possible to work around)
+ When returning JSX, {} (dynamic output) can only contain a single line to be interpreted. (Statement, function call, etc.)
+ When using a custom component/element, any properties that are passed can be accessed with (props) argument. 
+ props.children => represents everything passed between the element tags
+
+Props allow you to pass data from a parent (wrapping) component to a child (embedded) component. (methods also can be passed as reference)
+State objects are only managed inside a component. Managed properties can be of any type
+ State is used to change the component, well, state from within
+ You can of course pass the state  down to functional components, but these then can't directly edit it.
+ !!!Only changes in props  and/ or state trigger React to re-render your components and potentially update the DOM in the browser!!!
+ 
+When setting a function as a property, don't add () since it calls the function
+
+Good practice to use as many stateless components as possible. If every components manages state, every compononent manages everything. (Spaghetti code)
+
+Use ternary conditionals instead of if-else
+
+Radium supports all pseudo selectors
+
+HOOKS
+	useState allows to change state from a function
+		always returns an array with 2 elements. (previous state, function that allows to update the state)
+	With hooks, old state and new state are not merged. Instead there is replacement. So need to manually make sure all data is passed
