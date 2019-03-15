@@ -36,8 +36,107 @@ Good practice to use as many stateless components as possible. If every componen
 Use ternary conditionals instead of if-else
 
 Radium supports all pseudo selectors
+	Wrap the entire application in the root component with <StyleRoot> to use advanced features of Radium. (Pseudo-selectors excluded)
+	
+CSS Modules - Enables scoping css files to individual components prevent other components from being overwritten
+	!! shouldn't manually add packages to node modules since it will be overwritten when "npm install" is run
+	
+	Option 1.
+(  npm run eject ==> It moves create-react-app’s configuration files and dev/build/test scripts into you app directory. 
+                    If you don’t have a need to modify the config or scripts you don’t need to eject. Doing so will prevent you from being able to update to new versions of create-react-app. )
+					
+	Option 2. (Easier)
+	https://facebook.github.io/create-react-app/docs/adding-a-css-modules-stylesheet
+	  More Info : https://github.com/css-modules/css-modules
+	
+	
+	usage : import moduleName from 'dir/myCss.css';
+			<tag style = {moduleName.className} > content </tag> ==> module's properties are the same names as class names 
+													in the CSS file 
+													
+Components
+	Components that manage the state shouldn't be involved with UI rendering too much ~= render should contain too much JSX
+	If there is a single statement in an arrow function, the body can start with a return statement
+	When calling a function from a sub-component, parent comp. should send the functions as a property. click = 
+		this.clickHandler()
+	  The sub-component should call the function in the following form : click = {() => props.click()}
+	atm. we can't hardcode JSX elements without a root element, but lists can be returned
+	
+	When a local variable is defined in a component, don't define a property with the same name. The local variable will 	
+	also be overwritten
+	
+	A stateful component (container) does not automatically mean a class component.
+	Presentational Component = Stateless Compononent
+	
+  Class-based vs Functional Components
+	It's not guaranteed that every react-app will use latest ver. of React, so better practice to stick to the conventional.
+	If a prop is passed into a class, it can be accessed with this.props.propName
+	Lifecycle hooks have nothing to do with React Hooks!
+	
+Component Lifecycle
+	Creation
+		- constructor(props) ==> Default ES6 feature. If used, super(props) should be called.
+		- getDerivedStateFromProps(props, state) ==> Whenever props change, sync your state. (Very rare, won't be used a lot)
+			Don't http requests from here
+		- render() ==> Prepare & Structure JSX Code.
+		   |__> Render child components (within JSX)
+		-!! componentDidMount() ==> Do cause side-effects here. DON'T update the state as it triggers re-render!!
+			THIS DOES NOT MEAN REAL DOM WILL RE-RENDERED! INTERNAL VIRTUAL DOM WILL BE RE-RENDERED AND CHECK FOR CHANGES
+		
+		Some of the lifecycle hooks were rarely used and could be used incorrectly, they will be removed in the future.
+			ex: componentWillMount() ==> prepare your state (getDerived...)
+		
+	
+	Update
+		- getDerivedStateFromProps(props, state) ==> Very rarely used. Used to initalize state of a component that 
+			updates, based on the props received. Ex: Form Control, handle request internally.
+		-!! [Class | bool] shouldComponentUpdate(nextProps, nextState) ==> May cancel an update! (Performance purposes)
+												Should be used carefully: blocking an update may break a component(s)
+		- render() ==> Contructs its virtual DOM to if the real DOM needs to be updated
+		   |__> Update Child Component Props
+		   
+		- getSnapshotBeforeUpdate(prevProps, prevState) ==> takes the previous props and state to use for last minute DOM operations. (Not modification. Ex: Get last scroll position to get back to it after an update)
+		 
+		-!! componentDidUpdate() ==> Done with updating, render has been executed. Do cause side-effects here. 
+			Don't http requests from here, could cause an update loop triggering re-render. Used a lot!
+			
+		Legacy hook ex: componentWillReceive(props) ==> used for updating internal state. Could easily be used incorrectly
+		
+		React.memo : stores a snapshot of the component, only if the input changes it will re-render it
+		
+	When to optimize ?
+		- Is the component part of a parent component that could change something that does not affect itself ?
+			If that is the case, optimize.
+			
+	   Pure Components : use where you wanna check all props that matter to a component for difference
+			- is just a normal component that already implements 
+		
+	Clean up 
+		- componentWillUnmount()
+		
+	
+		
+		
+Debugging
+	When debugging from Chrome, the actual bundled code is different from our code. But Chrome provides this capability.
+  Error Boundary
+	componentDidCatch : receives pot. error and some additional information passed into automatically by React
+	It's executed when the component wrapped with an Error Boundary throws an error.
+	Only use error boundaries when it makes sense !!
+	
+	A key has to be on an outer element in a map method.
 
 HOOKS
-	useState allows to change state from a function
+	- useState() ==> allows to change state from a function
 		always returns an array with 2 elements. (previous state, function that allows to update the state)
 	With hooks, old state and new state are not merged. Instead there is replacement. So need to manually make sure all data is passed
+	
+	- useEffect() ==> combines the functionality of all class-based lifecycle hooks with React Hooks.
+		Will execute for every render cycle of the component (Create, Update, Delete etc.)
+		componentDidMount & componentDidUpdate combined in one effect. (not getDerivedStateFromProps)
+		
+			AS componentDidMount : useEffect(()=>{}, []); ==> give an empty array as the second argument
+			AS componentWillUnmount : useEffect(()=>{ return () => { [cleanup] }; }, []); ==> return a cleanup func.
+				Runs nefore BEFORE the main useEffect func., AFTER first render cycle
+		Possible to define multiple useEffect fucntions
+		
