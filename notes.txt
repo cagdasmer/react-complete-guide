@@ -188,18 +188,103 @@ Context API: Helps solve Prop Chain problem
 			const authContext = useContext(AuthContext) ==> React makes the connection behind the scenes
 
 						
-						
+				
 Debugging
 	When debugging from Chrome, the actual bundled code is different from our code. But Chrome provides this capability.
   Error Boundary
-	componentDidCatch : receives pot. error and some additional information passed into automatically by React
+	componentDidCatch : receives potential errors and some additional information passed into automatically by React
 	It's executed when the component wrapped with an Error Boundary throws an error.
 	Only use error boundaries when it makes sense !!
 	
 	A key has to be on an outer element in a map method.
+__________________________________________________________________________________________________________________________________________________
 
+
+Http / Ajax - AXIOS 
+	If multi-page, nothing special. Submit a form, send request, get a new HTML/React page back (no coupling)
+	
+	If single page, strong differentation between the front-end and the back-end.
+		- React app and the server still need to communicate from time to time:
+			Requests for JSON data. (Not HTML exchange !!)
+			Server is typically a RESTful API, exposing API endpoints to send requests
+
+	Sending Requests:
+		Opt. 1 : JavaScript XMLHttpRequest (cumbersome)
+			Construct your own request and handle the response
+		Opt. 2 : Axios (3rd party JavaScript package)
+			axios.get('https://url/posts', configuration?) ==> get request (Asynchronous)
+			axios.post('https://url/posts', postData) => post request
+			axios.delete('https://url/posts/' + id) => delete request
+			
+			// These are global
+			axios.interceptors.request.use(requestCfg => {
+					console.log(requestCfg);
+					// Edit request config
+					return requestCfg; // always return the config
+				}, error => {
+					console.log(error);
+					return Promise.reject(error); // return it to forward to our error handler
+				});							// Useful if there are seperate local & global tasks for errors
+			);
+	
+			axios.interceptors.response.use(responseCfg => {
+					...
+				}, error => {
+					...
+				});
+			
+				// Remove an interceptor
+			var myInterceptor = axios.interceptors.request.use(function () {/*...*/});
+			axios.interceptors.request.eject(myInterceptor);
+			
+			axios.defaults.baseUrl = 'https://url.com' ==> set the base url for axios methods
+			axios.defaults.headers.common['Authorization'] = 'AUTH TOKEN'; ==> set the default header for requests
+			
+			// These are local
+			axios.js => assumes the default and overwrites
+				const instance = axios.create({
+					baseURL: 'https://jsonplaceholder.typicode.com'
+				});
+				instance.defaults.headers.common['Authorization'] = 'AUTH TOKEN FROM INSTANCE';
+				
 
 	
+	promise (ES6): a default JavaScript object
+		.then(response => {..code..}) : takes a function as input, which is executed once the promise resolves.
+		.catch(error => {..code..}) : catch errors
+		
+	
+	Handling errors locally makes sense because we can change the output depending on the result
+	If something needs to be executed globally, use axios interceptors ↑↑
+	
+	When dynamically showing an output, the changing data is a side-effect. Need to re-render
+	
+
+Routing
+	We don't have different files, simply re-render parts off that single page or 
+		the entire single page depending on which the user navigated to
+		(also no reloads, instead re-render)
+								
+								Router Package
+		Parse URL/ Path ===> Read Config ===> Render / Load Appropriate JSX
+		
+		To use routing features;
+			wrap everything in the app which should be able to use routing, with the related router component (ex: <BrowserRouter>)
+			
+		<Route path="/" .... /> => do something according to the current path. This form checks for the prefix.
+						  \\__>render={() => <h1>Tactical Joker</h1>} ==> simplest form. 
+						  \\__>component={importedComponent/function}
+			<Route path="/" exact .... /> ==> matches the exact path
+			
+		Can use routes in the same page as many times as necessary!!
+
+
+
+
+
+
+
+_________________________________________________________________________________________________________________________________________________________
 HOOKS
 	- useState() ==> allows to change state from a function
 		always returns an array with 2 elements. (previous state, function that allows to update the state)
