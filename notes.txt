@@ -10,7 +10,7 @@ return (
       // This isn't actually HTML, it's JSX
           // className instead of class because this still is a JS file
       <div className="App">
-        <h1>Hi, I'm Anan React App</h1>
+        <h1>Hi, I'm a React App</h1>
       </div>
     );
 	
@@ -22,12 +22,27 @@ JSX must contain one root element. (e.g. <div> ... </div>) (possible to work aro
  When returning JSX, {} (dynamic output) can only contain a single line to be interpreted. (Statement, function call, etc.)
  When using a custom component/element, any properties that are passed can be accessed with (props) argument. 
  props.children => represents everything passed between the element tags
+ 
+  The workaround
+	Opt. 1: Wrap elements in square brackets and return the elements as an array : return [ <tag1></tag1>, <tag2></tag2> ]
+	Opt. 2: hoc: Higher Order Components that wrap other components. An empty wrapper that uses the special children propery
+		Hoc Creation:
+			1. const aux = props => props.children;
+			2. 
+		
+		hoc doc : https://reactjs.org/docs/higher-order-components.html
+		
+	Opt. 3: wrap with <React.Fragment></React.Fragment> (technically the same with Aux)
 
 Props allow you to pass data from a parent (wrapping) component to a child (embedded) component. (methods also can be passed as reference)
 State objects are only managed inside a component. Managed properties can be of any type
  State is used to change the component, well, state from within
- You can of course pass the state  down to functional components, but these then can't directly edit it.
+ You can of course pass the state down to functional components, but these then can't directly edit it.
  !!!Only changes in props  and/ or state trigger React to re-render your components and potentially update the DOM in the browser!!!
+ !!!setting a state is perfectly ok unless the changes to be made depend on another state!!! Ex: incrementing a variable
+   |___> In the above case, use setState like the following: this.setState( (prevState, props) =>{
+																return {};
+															})
  
 When setting a function as a property, don't add () since it calls the function
 
@@ -42,7 +57,7 @@ CSS Modules - Enables scoping css files to individual components prevent other c
 	!! shouldn't manually add packages to node modules since it will be overwritten when "npm install" is run
 	
 	Option 1.
-(  npm run eject ==> It moves create-react-app’s configuration files and dev/build/test scripts into you app directory. 
+(  npm run eject ==> It moves create-react-app’s configuration files and dev/build/test scripts into your app directory. 
                     If you don’t have a need to modify the config or scripts you don’t need to eject. Doing so will prevent you from being able to update to new versions of create-react-app. )
 					
 	Option 2. (Easier)
@@ -82,6 +97,7 @@ Component Lifecycle
 		   |__> Render child components (within JSX)
 		-!! componentDidMount() ==> Do cause side-effects here. DON'T update the state as it triggers re-render!!
 			THIS DOES NOT MEAN REAL DOM WILL RE-RENDERED! INTERNAL VIRTUAL DOM WILL BE RE-RENDERED AND CHECK FOR CHANGES
+			  The same rule applies to FUNCTIONAL COMPONENTS (RETURNED JSX)
 		
 		Some of the lifecycle hooks were rarely used and could be used incorrectly, they will be removed in the future.
 			ex: componentWillMount() ==> prepare your state (getDerived...)
@@ -104,19 +120,75 @@ Component Lifecycle
 		
 		React.memo : stores a snapshot of the component, only if the input changes it will re-render it
 		
+		How React Updates The DOM
+			- render()
+			- Compare DOMS for difference: Old Virtual DOM vs Re-rendered Virtual DOM (Faster than Real DOM)
+			- Update Real DOM ==> Change only the places where differences were detected
+				Virtual DOM : DOM representation in JavaScript
+			    Keep interaction with the real DOM to a minimum
+		
 	When to optimize ?
 		- Is the component part of a parent component that could change something that does not affect itself ?
 			If that is the case, optimize.
 			
 	   Pure Components : use where you wanna check all props that matter to a component for difference
-			- is just a normal component that already implements 
+			- is just a normal component that already implements shouldComponentUpdate with complete props check !!!
 		
 	Clean up 
 		- componentWillUnmount()
 		
 	
+PropTypes 
+	- improve the way to receive props. Ex: be more clear about which prop the component uses
+		Throw an error if an incompatible type is received. 
+	# npm install --save prop-types
+	Syntax: 
+		ClassName.propTypes = { 
+			[propName]: PropTypes.[type] // clicked = PropTypes.func
+		};
 		
+	doc: https://reactjs.org/docs/typechecking-with-proptypes.html
+
+PropChain : can help prevent overly long chain of passing props
+	UseCase - Auth Status
+	
 		
+Refs : Can be passed into any propery ( like key )
+	-	A function is passed to the ref property. (Can be an anonymous arrow function) 
+	Ex : componentDidMount(){
+			this.inputElement.focus();
+		}
+				// inputElement will be equal to the last input field (inputEl)
+		ref = {(inputEl) => {this.inputElement = inputEl}}
+		
+	doc : https://reactjs.org/docs/refs-and-the-dom.html
+		
+Context API: Helps solve Prop Chain problem
+	- A globally (or where we specify) available JavaScript object. (Could also be an array, string, number etc.)
+	- We can initialize our context with a default value.
+	
+	Option 1.
+		Syntax - Class:
+			const contextName = React.createContext({ ...initial values... }); (provides better auto completion)
+	
+		Syntax - Usage: 
+			Parent | wrap with <AuthContext.Provider  
+									value = { ...values...} > ==> gives a provider JSX component on this authContext object
+																Now the object can be accessed within the child components 
+			Children | wrap the JSX with <AuthContext.Consumer>
+							{(context) => <button onClick = {context.login}>Log in</button>}
+	
+	Option 2. (only in class-based components)
+		- static contextType = AuthContext (mandatory) ==> can be accessed from outside without the need to instantiate
+		- then the context can be accessed with " this.context "
+		
+	Option 3. (only in functional components)
+		- useContext() hook
+		Syntax:
+			const authContext = useContext(AuthContext) ==> React makes the connection behind the scenes
+
+						
+						
 Debugging
 	When debugging from Chrome, the actual bundled code is different from our code. But Chrome provides this capability.
   Error Boundary
@@ -126,6 +198,8 @@ Debugging
 	
 	A key has to be on an outer element in a map method.
 
+
+	
 HOOKS
 	- useState() ==> allows to change state from a function
 		always returns an array with 2 elements. (previous state, function that allows to update the state)
@@ -140,3 +214,7 @@ HOOKS
 				Runs nefore BEFORE the main useEffect func., AFTER first render cycle
 		Possible to define multiple useEffect fucntions
 		
+		doc: https://reactjs.org/docs/hooks-effect.html
+		
+	- useRef() ==> enables the use of refs for functional components
+	- useContext() ==> enables access to the context
