@@ -272,19 +272,77 @@ Routing
 			wrap everything in the app which should be able to use routing, with the related router component (ex: <BrowserRouter>)
 			
 		<Route path="/" .... /> => do something according to the current path. This form checks for the prefix.
-						  \\__>render={() => <h1>Tactical Joker</h1>} ==> simplest form. 
+						  \\__>render={() ==> <h1>Tactical Joker</h1>} ==> simplest form. 
 						  \\__>component={importedComponent/function}
 			<Route path="/" exact .... /> ==> matches the exact path
 			
 		Can use routes in the same page as many times as necessary!!
-
-
-
-
-
-
-
+		
+		<Link to = .... > Home </Link>	(instead of <a>)
+					 \\__> to = "/" ==> Simplest form
+					 \\__> to = {...JS Object...} ----> Ex: to 	<Link to={{  ==> Advanced form
+																	  pathname: '/new-post',
+																	  hash: '#submit' ==> jump to ID
+																	  search: '?quick-submit=true'
+																	}}
+		When we click a link, our state is contained since the application does not reload!!
+		
+  Route-Related Props : react-router gives extra information about the loaded route
+		- history
+		- location : searchparams, hash, etc.
+		- match : gives information about the matched request. (path, matched url, params, isExact?)
+		
+  withRouter HOC & Route Props
+		- When we don't want get the prop information from  within containers
+	  
 _________________________________________________________________________________________________________________________________________________________
+
+Redux
+	INTRO
+		Third party library for state management. Totally independent from React.
+		Helps state management, makes handling props easier
+		States concerns what you see on the screen
+		Sharing a state between two entirely different components is very complex.
+		React's reactivity system doesn't react to defined global variables. That's why a global variable can't be 
+			defined for state. ==> That's what REDUX is for!!
+			
+	REDUX FLOW : provides a certain way of managing data that can be integrated into the React app via another package.
+		- Central Store: Stores entire application state.
+		
+		- Component: Wants to manipulate app state, but doesn't do that by directly manipulating the central store.
+				It would never be possible to determine where the change that broke the application was made.
+				Need to have a clear, predictable process for updating the state.
+				
+		- Action : Dispatched from JavaScript within components.
+			An information package with a type (addIngredient, removeIngredient) and a payload (which ingredient)
+			Does not direcly reach the store!, doesn't hold any logic!, doesn't know how to update the store!
+			
+		- Reducers (combinable) : one root reducer that is directly connected to the Central store
+			Reducer can check the type of the action it receives, then define and execute the behavior for that type of action. Then output the updated state (replaces the old state with a new state. new state can be based on the old one) (spread, never mutate)
+			SYNCHRONOUS CODE ONLY - input in, output out, nothing in between, no delay
+			The reducer is strongly connected to the store since it's the only thing that can update the state.
+			
+		- (Auto.) Subscription : Get the updated state back into the component in the form of Props
+		
+		ACTION TYPE IS A UNIQUE IDENTIFIER OF OUR CHOICE. Convention: ALL UPPERCASE, descriptive
+		Can add any property after defining the type (name, id, value, etc. or just a payload object)
+		
+	
+React-Redux : allows to hook up the redux store to the React application 
+	Store should be created right before or when the application starts. { createStore }
+	Reducers' logic is stored into their own components, since there are a lot of code for different types of actions
+	
+	<Provider store={store}> (wrap with) ==> a helper component that allows to inject our store into the react components
+	
+	Subscription is setup inside the container in which we want to access the store by using;
+	{ connect } => a function that returns a HOC that we use on the export
+		Usage: connect(..conf..)(Component) ==> send configuration and execute the returned HOC 
+			conf:
+				1. The part of the whole app. state we are interested in
+				2. Actions to be dispathced
+
+
+__________________________________________________________________________________________________________________________________________________
 HOOKS
 	- useState() ==> allows to change state from a function
 		always returns an array with 2 elements. (previous state, function that allows to update the state)
