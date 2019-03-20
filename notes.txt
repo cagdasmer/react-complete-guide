@@ -345,9 +345,34 @@ React-Redux : allows to hook up the redux store to the React application
 				
 	
   Combining Reducers
-	
+	- achieved with a helper function: { combineReducers } 
+		==> takes a JS object mapping the reducers to different slices of the state (input)
+			merges everything into one state reducer (output)
+	- Syntax:
+		const rootReducer = combineReducers({
+			ctr: counterReducer,
+			res: resultReducer
+		});
+		
+	Even though there is one state in the end, redux adds one level of nesting;
+		Redux adds one level of nesting where it has one state object with keys (e.g.ctr, res) as props
+	The reducers by themselves don't have to the others' state!!!
+		If one reducer needs to access one of the other reducers' state, use payload
 	
 
+When to use Redux and when to use local states?
+	Depends on the size the application and the complexity of the state
+	
+	  App. Size
+		Small app. - not good
+		Medium & Big - good idea
+		
+	  State Types
+	    Local UI State - don't use
+		Persistent State (Users, Posts, etc.) - use for sliced data
+			When the page is refreshed, state will be gone. Redux is not a database
+		Client State (Auth., filter) - definitely use
+	
 Immutable Update Patterns on reduxjs.org: http://redux.js.org/docs/recipes/reducers/ImmutableUpdatePatterns.html
 	each layer of nesting makes it harder to read, and gives more chances to make mistakes. This is one of several reasons why you are encouraged to 
 	keep your state flattened, and compose reducers as much as possible.
