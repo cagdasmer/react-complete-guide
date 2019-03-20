@@ -340,6 +340,17 @@ React-Redux : allows to hook up the redux store to the React application
 			conf:
 				1. The part of the whole app. state we are interested in
 				2. Actions to be dispathced
+				
+	Outsourcing action types: Since action types must be matched exactly, it is good practice to outsource them to prevent errors like a typo
+				
+	
+  Combining Reducers
+	
+	
+
+Immutable Update Patterns on reduxjs.org: http://redux.js.org/docs/recipes/reducers/ImmutableUpdatePatterns.html
+	each layer of nesting makes it harder to read, and gives more chances to make mistakes. This is one of several reasons why you are encouraged to 
+	keep your state flattened, and compose reducers as much as possible.
 
 
 __________________________________________________________________________________________________________________________________________________
