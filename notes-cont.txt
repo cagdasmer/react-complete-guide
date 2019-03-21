@@ -1,0 +1,23 @@
+React-Thunk : allows actions (creators) to not return the action itself, but 
+	return a function that will eventually dispatch an action. (blocks the original dispatching)
+	This way async. code can be run
+	
+	Asynchronous action creators are created to dispatch actions created by synchronous ones.
+		- Used as a step
+		
+	Thunk also can pass the state as an aditional argument. ( getState )
+		- Access a property: getState().propertyName 
+		- Alternatively, pass state properties as arguments
+		
+  Where to transform data?
+	The only place we can execute asynchronous code is the action creator. 
+	We can perform manipulation to the data there
+	
+	We can also perform data manipulation in the reducer. (Synchronous only)
+	
+	Author is on the side of the reducer
+	
+	In the end, choose a path and stick to it throughout the project!!
+	
+Advanced Reducers : a reducer has a (relatively) long switch-case if it handles more than 2 actions
+	- Good habit to clean it up. (Not a must, optional)
