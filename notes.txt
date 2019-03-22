@@ -167,14 +167,17 @@ Context API: Helps solve Prop Chain problem
 	- A globally (or where we specify) available JavaScript object. (Could also be an array, string, number etc.)
 	- We can initialize our context with a default value.
 	
-	Option 1.
-		Syntax - Class:
+	
+	Syntax - Class:
 			const contextName = React.createContext({ ...initial values... }); (provides better auto completion)
 	
-		Syntax - Usage: 
+	Syntax - Usage: 							/------> default context component
 			Parent | wrap with <AuthContext.Provider  
-									value = { ...values...} > ==> gives a provider JSX component on this authContext object
+									value = { ...values...}> ==> gives a provider JSX component on this authContext 
+																object
 																Now the object can be accessed within the child components 
+  Syntax - Consuming context															
+	Option 1.
 			Children | wrap the JSX with <AuthContext.Consumer>
 							{(context) => <button onClick = {context.login}>Log in</button>}
 	
@@ -294,6 +297,10 @@ Routing
 		
   withRouter HOC & Route Props
 		- When we don't want get the prop information from  within containers
+_________________________________________________________________________________________________________________________________________________________
+
+Forms & Form Validation (BURGER)
+	
 	  
 _________________________________________________________________________________________________________________________________________________________
 
@@ -376,24 +383,88 @@ When to use Redux and when to use local states?
 Immutable Update Patterns on reduxjs.org: http://redux.js.org/docs/recipes/reducers/ImmutableUpdatePatterns.html
 	each layer of nesting makes it harder to read, and gives more chances to make mistakes. This is one of several reasons why you are encouraged to 
 	keep your state flattened, and compose reducers as much as possible.
+	
+___________________________
 
+Redux Advanced
+	There can be a middleware betw. action dispatch and reducer, allowing us to perform an operation without the action reaching the reducer.
+	Middleware can be created or provided by other providers
+	
+	Applied with { applyMiddleware }
+		Syntax :													// executed in order 
+			const store = createStore(rootReducer, applyMiddleware( [middleware1], [middleware2]... );
+			
+	{ compose } ==> allows to combine enhancers
+	
+	applyMiddleware is only for middlewares. If there are other enchancers, need use compose to compose a set of enhancers with both redux dev tools and the middleware. Redux dev-tools: DAYUM SON
+	
+  Action Creators : help execute asynchronous code
+  
+  Third party library (middleware) to handle asynchronous code : react-thunk
+
+	Middleware (basic): Functions (or code in general) that's hooked into a process which then gets executed as part of that process, without stopping it. (Asynchronous)  
+
+React-Thunk : allows actions (creators) to not return the action itself, but 
+	return a function that will eventually dispatch an action. (blocks the original dispatching)
+	This way async. code can be run
+	
+	Asynchronous action creators are created to dispatch actions created by synchronous ones.
+		- Used as a step
+		
+	Thunk also can pass the state as an aditional argument. ( getState )
+		- Access a property: getState().propertyName 
+		- Alternatively, pass state properties as arguments
+		
+  Where to transform data?
+	The only place we can execute asynchronous code is the action creator. 
+	We can perform manipulation to the data there
+	
+	We can also perform data manipulation in the reducer. (Synchronous only)
+	
+	Author is on the side of the reducer
+	
+	In the end, choose a path and stick to it throughout the project!!
+	
+
+React-Saga : Different approach for executing asynchronous code, doesn't mix with action dispatches
+	< WEEKEND > (BURGER)
+	
+Advanced Reducers : a reducer has a (relatively) long switch-case if it handles more than 2 actions
+	- Good habit to clean it up. (Not a must, optional)
 
 __________________________________________________________________________________________________________________________________________________
-HOOKS
-	- useState() ==> allows to change state from a function
+HOOKS : new way of creating components. Functional components only, manage state with hooks. (They provide extra features, replacing class-only functionalities.) ( React ^16.8.0 )
+	Knowing which lifecycle hook to use, when and how to use it correctly can be challenging in more complex apps.
+	With hooks, handle both state and side effects like HTTP requests and also render the user interface. (Neat)
+	
+  Hook Functions	- function in a function is available in JS
+	- useState( initialState ) ==> allows to change state from a function
 		always returns an array with 2 elements. (previous state, function that allows to update the state)
-	With hooks, old state and new state are not merged. Instead there is replacement. So need to manually make sure all data is passed
+	Can directly call the updater function to perform the state update.
+	With hooks, old state and new state are not merged. Instead there is replacement. So need to manually make sure all data is passed.
 	
 	- useEffect() ==> combines the functionality of all class-based lifecycle hooks with React Hooks.
 		Will execute for every render cycle of the component (Create, Update, Delete etc.)
 		componentDidMount & componentDidUpdate combined in one effect. (not getDerivedStateFromProps)
 		
+		Since react does a lot of things behind the scenes, side-effects (HTTP GET, send data, etc.) shouldn't be caused outside useEffect. Instead, do them in a callback function passed to useEffect
+		
 			AS componentDidMount : useEffect(()=>{}, []); ==> give an empty array as the second argument
-			AS componentWillUnmount : useEffect(()=>{ return () => { [cleanup] }; }, []); ==> return a cleanup func.
+			AS componentWillUnmount : useEffect(()=>{ return () => { [cleanup] }; }, []); ==> return a cleanup func. (what is returned is executed as a cleanup)
 				Runs nefore BEFORE the main useEffect func., AFTER first render cycle
-		Possible to define multiple useEffect fucntions
+				
+		Second array argument: Values we wanna have look at before useEffect executes, execute only if they are changed.
 		
 		doc: https://reactjs.org/docs/hooks-effect.html
 		
 	- useRef() ==> enables the use of refs for functional components
 	- useContext() ==> enables access to the context
+
+	HOOKS FUNCTIONS CAN BE DEFINED/USED MULTIPLE TIMES
+	  - Calling use state multiple times allows to seperate the states, change them independetly and focus on one state at a time.
+	  - State can also be merged by passing all the fields in a single call to useState. (e.g. {propA: '', propB: [])
+	  
+	RULES FOR USING HOOKS
+		- Hook functions must be used at the top level of the component function.
+		- Top level must be guaranteed. Must only call useState directly in the top level.
+			Shouldn't also be called in any form of nesting. (if, for, while, etc.)
