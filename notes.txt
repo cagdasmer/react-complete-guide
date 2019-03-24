@@ -435,7 +435,8 @@ Advanced Reducers : a reducer has a (relatively) long switch-case if it handles 
 __________________________________________________________________________________________________________________________________________________
 HOOKS : new way of creating components. Functional components only, manage state with hooks. (They provide extra features, replacing class-only functionalities.) ( React ^16.8.0 )
 	Knowing which lifecycle hook to use, when and how to use it correctly can be challenging in more complex apps.
-	With hooks, handle both state and side effects like HTTP requests and also render the user interface. (Neat)
+	With hooks, can handle both state and side effects like HTTP requests and also render the user interface. (Neat)
+	Basically, now it's okay to create complex functional components
 	
   Hook Functions	- function in a function is available in JS
 	- useState( initialState ) ==> allows to change state from a function
@@ -459,6 +460,8 @@ HOOKS : new way of creating components. Functional components only, manage state
 		
 	- useRef() ==> enables the use of refs for functional components
 	- useContext() ==> enables access to the context
+	
+	Not every functional component has to use these hooks. Some of them can still serve as presentational components
 
 	HOOKS FUNCTIONS CAN BE DEFINED/USED MULTIPLE TIMES
 	  - Calling use state multiple times allows to seperate the states, change them independetly and focus on one state at a time.
@@ -468,3 +471,4 @@ HOOKS : new way of creating components. Functional components only, manage state
 		- Hook functions must be used at the top level of the component function.
 		- Top level must be guaranteed. Must only call useState directly in the top level.
 			Shouldn't also be called in any form of nesting. (if, for, while, etc.)
+	
