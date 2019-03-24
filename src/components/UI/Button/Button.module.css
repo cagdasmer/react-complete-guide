@@ -1,0 +1,47 @@
+.orderBtn, .controlBtn {
+    background-color: DodgerBlue; /* Blue background */
+    border: none; /* Remove borders */
+    color: white; /* White text */
+    padding: 5px 8px; /* Some padding */
+    font-size: 16px; /* Set a font size */
+    cursor: pointer; /* Mouse pointer on hover */
+    margin-right: 2px;
+  }
+
+.orderBtn:disabled, .controlBtn:disabled{
+    background-color: rgb(59, 53, 53);
+    opacity: 0.3;
+    color: gray;
+}
+
+.orderBtn:not(:disabled) {
+    animation: enable 0.3s linear;
+}
+
+.controlBtn:not(:disabled){
+    animation: colorize 0.3s linear;
+}
+
+@keyframes colorize {
+    0% {
+        opacity: 0.3;
+    }
+    60% {
+        opacity: 0.7;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes enable {
+    0% {
+        transform: scale(1);
+    }
+    60% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
