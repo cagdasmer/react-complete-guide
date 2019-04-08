@@ -3,7 +3,7 @@ rest ~= **args
 
 Destructuring : extracting elements
 	Array : [a,b] = ['Gi', 'There']
-	Object : {name} = {name: 'Max', age:26} (age is undefined)
+	Object : { name } = {name: 'Max', age:26} (age is undefined)
 	
 ____________REACT________________
 return (
@@ -425,17 +425,59 @@ React-Thunk : allows actions (creators) to not return the action itself, but
 	
 	In the end, choose a path and stick to it throughout the project!!
 	
+Advanced Reducers : a reducer has a (relatively) long switch-case if it handles more than 2 actions
+	- Good habit to clean it up. (Divide into multiple reducers) (Not a must, optional)
+	
 
 React-Saga : Different approach for executing asynchronous code, doesn't mix with action dispatches
-	< WEEKEND > (BURGER)
+	Saga : Essentialy are functions (kind of) which run upon certain actions that handle all side-effect logic.
+		Side effect: e.g. Edit local storage, access a server, execute a timer. These are the side-effects because they don't directly manipulate the store.
+		
+	  Syntax: function* funcName(action){  ==> generator function (next-gen)
+		[Recall] Generator Function : Functions that can be paused until the next call (e.g. wait for async. code to finish)
+				Can also be executed from start to finish if there is no async. code
+			
+		Sagas need to return an action object that gets dispatched (like redux actions)
+		  This is done by using a special function from the redux-saga package : { put } from 'redux-saga/effects'
+		  
+		Ex:
+			function* logoutSaga(action) {
+				yield localStorage.removeItem('token');			\
+				yield localStorage.removeItem('expirationDate'); >=> Won't continue till' the statements are done
+				yield localStorage.removeItem('userId');		/
+				yield put({									   /
+					type: actionTypes.AUTH_LOGOUT
+				})
+			}
 	
-Advanced Reducers : a reducer has a (relatively) long switch-case if it handles more than 2 actions
-	- Good habit to clean it up. (Not a must, optional)
+	Hook saga to store: 
+		Applied with createSagaMiddleware 
+	  Syntax:
+		const sagaMiddleware = createSagaMiddleware();
+			
+			/** add the middleware as argument to applyMiddleware **/
+		applyMiddleware(..., sagaMiddleware);
+		
+	Call logout function:
+		sagaMiddleware.run(logoutSaga);
+		
+	Listen for logout action dispatch:	
+		import { takeEvery } from 'redux-saga/effects';
+		
+		function* watchYourAction(){
+			yield takeEvery(actionTypes.YOUR_SAGA_ACTION_TYPE, logoutSaga);
+		}
+		
+	Start watching from index.js:
+	sagaMiddleware.run(watchYourAction);	
+		
+	Could get rid of all action creators when using sagas, but using action creators means having a reliable way  of creation actions
+
 
 __________________________________________________________________________________________________________________________________________________
 HOOKS : new way of creating components. Functional components only, manage state with hooks. (They provide extra features, replacing class-only functionalities.) ( React ^16.8.0 )
 	Knowing which lifecycle hook to use, when and how to use it correctly can be challenging in more complex apps.
-	With hooks, can handle both state and side effects like HTTP requests and also render the user interface. (Neat)
+	With hooks, handle both state and side effects like HTTP requests and also render the user interface. (Neat)
 	Basically, now it's okay to create complex functional components
 	
   Hook Functions	- function in a function is available in JS
@@ -447,6 +489,7 @@ HOOKS : new way of creating components. Functional components only, manage state
 	- useEffect() ==> combines the functionality of all class-based lifecycle hooks with React Hooks.
 		Will execute for every render cycle of the component (Create, Update, Delete etc.)
 		componentDidMount & componentDidUpdate combined in one effect. (not getDerivedStateFromProps)
+		let the screen paint first, and later run the effects.
 		
 		Since react does a lot of things behind the scenes, side-effects (HTTP GET, send data, etc.) shouldn't be caused outside useEffect. Instead, do them in a callback function passed to useEffect
 		
@@ -456,13 +499,33 @@ HOOKS : new way of creating components. Functional components only, manage state
 				
 		Second array argument: Values we wanna have look at before useEffect executes, execute only if they are changed.
 		
-		doc: https://reactjs.org/docs/hooks-effect.html
+		Effect function itself is different on every render.
+		React remembers the effect function you provided, and runs it after flushing changes to the DOM and letting the browser paint the screen.
+		So even if we speak of a single conceptual effect here, it is represented by a different function on every render — !!and each effect function “sees” props and state from the particular render it “belongs” to.!!
 		
-	- useRef() ==> enables the use of refs for functional components
-	- useContext() ==> enables access to the context
+		doc: https://reactjs.org/docs/hooks-effect.html
 	
-	Not every functional component has to use these hooks. Some of them can still serve as presentational components
+	- useLayoutEffect() ==> identical to useEffect, but it fires synchronously after all DOM mutations. 
+		Use this to read layout from the DOM and synchronously re-render. Updates scheduled inside useLayoutEffect will be flushed synchronously, before the browser has a chance to paint.
+		
+		!!Prefer the standard useEffect when possible to avoid blocking visual updates.!!
+		
+	!! Hooks let you choose whether effects should block rendering or not—but it’s up to you to decide what’s a better user experience for your particular use case.
+		
+	- useRef() ==> enables the use of refs for functional components.
+				 is the go-to hook if mutable variable is needed. Unlike local variables, React makes sure same reference is returned during each render
+				 
+	- useContext() ==> enables access to the context
+		Syntax:
+			const myContext = useContext(DefinedContext);
+			<button onClick={myContext.property}> A button </button>
 
+	- useReducer( reducerFunc., initialState ) ==> alternative to useState (more powerful) 
+	Totally independent from Redux or React Redux, built into core React. Simple function that helps us manipulate state conveniently.
+		Also returns an array with two elements: [state, dispatch]!!
+		
+	Not every functional component has to use these hooks. Some of them can still serve as presentational components
+	
 	HOOKS FUNCTIONS CAN BE DEFINED/USED MULTIPLE TIMES
 	  - Calling use state multiple times allows to seperate the states, change them independetly and focus on one state at a time.
 	  - State can also be merged by passing all the fields in a single call to useState. (e.g. {propA: '', propB: [])
@@ -471,4 +534,3 @@ HOOKS : new way of creating components. Functional components only, manage state
 		- Hook functions must be used at the top level of the component function.
 		- Top level must be guaranteed. Must only call useState directly in the top level.
 			Shouldn't also be called in any form of nesting. (if, for, while, etc.)
-	
