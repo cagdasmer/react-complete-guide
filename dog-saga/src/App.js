@@ -1,43 +1,41 @@
-import React, { Component } from 'react';
+import React from 'react';
+import { connect } from 'react-redux';
+
 import logo from './logo.svg';
 import './App.css';
 
-import { connect } from "react-redux";
+import { apiCallRequest } from './actions/actions';
 
-class App extends Component {
-  render() {
-    const { 
-      fetching, 
-      dog, 
-      onRequestDog, 
-      error 
-    } = this.props;
-    
-    return (
-      <div className="App">
-        <header className="App-header">
-          <img src={dog || logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to Dog Saga</h1>
-        </header>
+const App = props => {
+  const { fetching, dog, onRequestDog, error } = props;
 
-        {dog ? (
-          <p className="App-intro">Keep clicking for new dogs</p>
-        ) : (
-          <p className="App-intro">Replace the React icon with a dog!</p>
-        )}
+  return (
+    <div className="App">
+      <header className="App-header">
+        <img src={dog || logo} className="App-logo" alt="logo" />
+        <h1 className="App-title">Welcome to Dog Saga</h1>
+      </header>
 
-        {fetching ? (
-          <button disabled>Fetching...</button>
-        ) : (
-          <button onClick={onRequestDog}>Request a Dog</button>
-        )}
+      {dog ? (
+        <p className="App-intro">Keep clicking for new dogs</p>
+      ) : (
+        <p className="App-intro">Replace the React icon with a dog!</p>
+      )}
 
-        {error && <p style={{ color: "red" }}>Uh oh - something went wrong!</p>}
+      {fetching ? (
+        <button type="button" disabled>
+          Fetching...
+        </button>
+      ) : (
+        <button type="submit" onClick={onRequestDog}>
+          Request a Dog
+        </button>
+      )}
 
-      </div>
-    );
-  }
-}
+      {error && <p style={{ color: 'red' }}>Uh oh - something went wrong!</p>}
+    </div>
+  );
+};
 
 const mapStateToProps = state => {
   return {
@@ -49,8 +47,11 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    onRequestDog: () => dispatch({ type: "API_CALL_REQUEST" })
+    onRequestDog: () => dispatch(apiCallRequest())
   };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(App);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(App);
