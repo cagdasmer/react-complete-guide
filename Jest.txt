@@ -101,6 +101,44 @@ Snapshot Testing (for Components) : Allows to track changes to data over time
 		- package.json : scripts :{
 							"test": "jest --config=jest.config.json"
 						}
-					!! When using the --config option, the JSON file must not contain a "jest" key:
+					!! When using the --config option, the jest config JSON file must not contain a "jest" key:
 		
 		docs: https://airbnb.io/enzyme/docs/api/
+		
+Component Testing  
+  We actually want to test the unconnected version (not the one with export default connect(...))because we want to set up dynamic props.
+  We don't want these props to come from the store, we provide them directly
+  
+  !!!Snaphots hold seperate exports for all tests than work with a snapshot
+  
+Mocking Libraries : use fake data instead of using a remote resource
+  Usage: 
+	1. create a __mocks__ directory under your module (ex: tests)
+	2. create a file with the same name as the file or library you want to mock (moment.js)
+	3. include the library you want to use with : 
+			const moduleName require.requireActual('moduleName')
+		when you use the library under tests module, the mocked version will be used
+
+		docs: https://jestjs.io/docs/en/manual-mocks
+		
+Test User Interaction
+	wrapper can be used get items with tags, id, classname etc. (Much like in jQuery)
+	Can check the state of a component by getting its state with the wrapper
+	When multiple elements are returned, can use .at(index) or other comps.
+	
+		docs: https://airbnb.io/enzyme/docs/api/ShallowWrapper/simulate.html
+			https://airbnb.io/enzyme/docs/api/ShallowWrapper/state.html
+			
+  Test Mocked Functions - Spies
+	Goal is to create fake functions to make assertions. (Ex: was it called, how many times?)
+	Syntax:
+		const yourSpy = jest.fn(); // no arguments
+		
+	Can access a component's props with enzyme: wrapper.find('component').props()
+												wrapper.find('component').prop('onPropName')(args);
+		
+		docs: https://jestjs.io/docs/en/expect#tohavebeencalled, times, with, etc. 
+		
+	Using MapDispatchToProps makes it easier to test components that dispatch an action
+	
+	eliminate duplicate lines in testcases with: afterAll(),afterEach(),beforeAll(), etc.
