@@ -1,0 +1,69 @@
+Complexity arises when threads need to communicate with each other. (Deadlock)
+A thread is essentially a task, a task will have its own overwritten run method to perform the required functionality
+A thread is run by calling its .start() method. Can't start a thread twice
+  Solution: create a new instance and kick that off.
+ 
+Pause execution for a specified period of time with .sleep(ms)
+	Throws InterruptedException
+	
+Can find out the thread that executed a specific line by using .getName()
+	ex: Thread.currentThread().getName();
+  and set it with .setName()
+  
+A thread has to extend Thread class in order to achieve multi-threading
+
+Thread synchronization
+  Atomicity allows for a block of code to be not interrupted before it finishes execution.
+  Achieved with public synchronized int methodName () {...}
+	or synchronized(this) { ...block of code... }
+	
+
+	////////////////
+public class Application {
+
+    public static void main(String[] args) {
+	 System.out.println("Ananın amı");
+
+	 //Synchronization
+        Sequence sequence = new Sequence();
+
+        for(int i = 0; i <100; i++){
+            System.out.println(sequence.getNext());
+        }
+
+
+	 /*Task taskRunner = new Task();
+	 taskRunner.start();
+
+        // Inline Thread
+        System.out.println("Starting thread 2");
+        Thread t1 = new Thread(new RunnableTask());
+        t1.start();
+
+        // Option 3
+        *//*Thread t2 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for(int i=0; i < 1000; i++){
+                    System.out.println("number: " + i);
+                }
+            }
+        });*/
+    }
+}
+
+class Task extends Thread {
+    public void run(){
+        for(int i=0; i < 1000; i++){
+            System.out.println("number: " + i);
+        }
+    }
+}
+
+class RunnableTask implements Runnable {
+    public void run(){
+        for(int i=0; i < 1000; i++){
+            System.out.println("number: " + i);
+        }
+    }
+}
