@@ -142,3 +142,5 @@ Test User Interaction
 	Using MapDispatchToProps makes it easier to test components that dispatch an action
 	
 	eliminate duplicate lines in testcases with: afterAll(),afterEach(),beforeAll(), etc.
+	
+	A component can be called with a different set of props with wrapper.setProps({...}) methods

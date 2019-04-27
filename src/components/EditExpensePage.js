@@ -5,12 +5,12 @@ import { editExpense, removeExpense } from "../actions/expenses";
 
 export const EditExpensePage = props => {
   const onSubmit = expense => {
-    props.editExpense(props.expense, expense);
+    props.editExpense(props.expense.id, expense);
     props.history.push("/");
   };
 
   const onClick = () => {
-    props.removeExpense(props.expense);
+    props.removeExpense(props.expense.id);
     props.history.push("/");
   };
 
@@ -34,8 +34,8 @@ const mapStateToProps = (state, props) => {
 };
 
 const mapDispatchToProps = dispatch => ({
-  editExpense: expense => dispatch(editExpense(expense.id, expense)),
-  removeExpense: expense => dispatch(removeExpense(expense.id))
+  editExpense: (id, expense) => dispatch(editExpense(id, expense)),
+  removeExpense: id => dispatch(removeExpense(id))
 });
 
 export default connect(
