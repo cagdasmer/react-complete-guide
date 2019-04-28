@@ -83,7 +83,7 @@ Snapshot Testing (for Components) : Allows to track changes to data over time
 	  
 	  Additional setup:
 		- src/tests/setupTests.js : allows to configure the test environment
-			. import enzyme & enzyme adapter
+			. import enzyme & enzyme adapter : { configure }, Adapter
 			. call a single method to wire-up enzyme
 				Enzyme.configure({
 					adapter: new Adapter()
@@ -92,7 +92,7 @@ Snapshot Testing (for Components) : Allows to track changes to data over time
 		- <rootDir> jest.config.json 
 			content : {
 						"jest": {
-							"setupFilesAfterEnv": [
+							"setupFiles": [
 								"raf/polyfill", 
 								"<rootDir>src/setupTests.js"
 							]
