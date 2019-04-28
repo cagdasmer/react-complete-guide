@@ -1,0 +1,46 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Message should change when the button is clicked 1`] = `
+<div>
+  <React.Fragment>
+    <div>
+      Loading fact...
+    </div>
+    <button
+      onClick={[Function]}
+    >
+      Load Fact
+    </button>
+  </React.Fragment>
+</div>
+`;
+
+exports[`Should correctly render the FactGenerator component 1`] = `
+<div>
+  <React.Fragment>
+    <div>
+      No facts loaded yet
+    </div>
+    <button
+      onClick={[Function]}
+    >
+      Load Fact
+    </button>
+  </React.Fragment>
+</div>
+`;
+
+exports[`Should correctly render the FactGenerator when the button is clicked 1`] = `
+<div>
+  <React.Fragment>
+    <_default
+      text="Awesome fact!"
+    />
+    <button
+      onClick={[Function]}
+    >
+      Load Fact
+    </button>
+  </React.Fragment>
+</div>
+`;
