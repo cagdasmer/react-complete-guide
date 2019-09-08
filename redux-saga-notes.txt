@@ -1,0 +1,242 @@
+Promise:
+	The Promise object represents the eventual completion (or failure) of an asynchronous operation, and its resulting value.
+	A Promise is a proxy for a value not necessarily known when the promise is created. 
+	It allows you to associate handlers with an asynchronous action's eventual success value or failure reason. 
+	This lets asynchronous methods return values like synchronous methods: 
+														instead of immediately returning the final value, the asynchronous method returns a promise to supply the value at some point in the future.
+
+	A Promise is in one of these states:
+		pending: initial state, neither fulfilled nor rejected.
+		fulfilled: meaning that the operation completed successfully.
+		rejected: meaning that the operation failed.
+		
+	ref : https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
+
+Effect: 
+	"put" is one example of what we call an Effect. 
+	Effects are plain JavaScript objects which contain instructions to be fulfilled by the middleware. 
+	When a middleware retrieves an Effect yielded by a Saga, the Saga is paused until the Effect is fulfilled.
+
+2-BASICS | https://redux-saga.js.org/docs/basics/
+2.1-Saga Helpers
+	redux-saga Provides some helper effects, wrapping internal functions to spawn tasks, when some specific actions are dispatched.
+	The helper functions are built on top of the lower level API
+
+	1. takeEvery --> allows multiple task instances to be started concurrently
+	2. takeLatest --> allows only one task to run at any moment. only get the response for the latest dispatched action
+	
+	If you have multiple Sagas watching for different actions, 
+	  you can create multiple watchers with those built-in helpers, 
+	  which will behave like there was 'fork' used to spawn them. 
+	  
+	// single entry point to start all Sagas at once
+	export default function* rootSaga() {
+		yield all([ ----> This means the two resulting Generators will be started in parallel. Now we only have to invoke sagaMiddleware.run on the root Saga
+		helloSaga(), --> Console.log(...)
+		watchIncrementAsync() --> takeEvery('INCREMENT_ASYNC', asyncFunc)
+	  ])
+	}
+
+2.2-Declarative-Effects
+	An Effect is an object that contains some information to be interpreted by the middleware. 
+	You can view Effects like instructions to the middleware to perform some operation 
+	  (e.g., invoke some asynchronous function, dispatch an action to the store, etc.)
+	To create Effects, you use the functions provided by the library in the 'redux-saga/effects' package.
+	Sagas can yield Effects in multiple forms. The easiest way is to yield a Promise.
+	
+	- put(action)
+		Creates an Effect description that instructs the middleware to dispatch an action to the Store. 
+		This way we can test the Generator's dispatch by inspecting the yielded Effect and making sure it contains the correct instructions
+		This effect is non-blocking and any errors that are thrown downstream(e.g. in a reducer) will not bubble back into the saga.
+		
+	- call(fn, ...args)
+		Creates an Effect description that instructs the middleware to call the function fn with args as arguments.
+		. fn: Function - A Generator function, or normal function which either returns a Promise as result, or any other value
+		. args: Array<any> - An array of values to be passed as arguments to fn
+		Ex:
+			function* fetchProducts() {
+			  const products = yield call(Api.fetch, '/products')
+			  // ...
+			 }
+		 Just as in Redux you use action creators to create a plain object describing the action that will get executed by the Store
+		 'call' creates(and returns) a plain object describing the function call. 
+		 The redux-saga !!!middleware takes care of executing the function call and resuming the generator with the resolved response
+
+2.5-A common abstraction: Effect
+	To generalize, triggering Side Effects from inside a Saga is always done by yielding some !!declarative!! Effect.
+	  (Yielding a promise directly makes testing difficult)
+	What a Saga does is actually compose all those Effects together to implement the desired control flow
+	We saw that using Effects like call and put, combined with high-level APIs like takeEvery allows us to achieve the same things as redux-thunk, 
+	  but with the added benefit of easy testability.
+	  
+3-ADVANCED | https://redux-saga.js.org/docs/advanced/
+3.1-Pulling future actions
+	- take(pattern)
+		Creates an Effect description that instructs the middleware to wait for a specified action on the Store. 
+		The Generator is !!!suspended until!!! an action that matches pattern is dispatched
+		The result of yield take(pattern) is an !!action object being dispatched.
+	
+	- take(channel) --> Hotspot
+		Creates an Effect description that instructs the middleware to wait for a specified message from the provided Channel. 
+		If the channel is already closed, then the Generator will immediately terminate following the same process described above for take(pattern).
+	
+	https://redux-saga.js.org/docs/advanced/FutureActions.html - Basic logger
+	Using take has a subtle impact on how we write our code. 
+	
+	In the case of takeEvery, 
+	  the invoked tasks have no control on when they'll be called. They will be invoked again and again on each matching action. 
+	  They also have no control on when to stop the observation
+	  
+	In the case of take, 
+	  the control is inverted. Instead of the actions being pushed to the handler tasks, the !!!Saga is pulling the action by itself!!!. 
+	  It looks as if the Saga is performing a normal function call action = getNextAction() which will resolve when the action is dispatched.
+	  
+	This inversion of control allows us to implement control flows that are non-trivial to do with the traditional push approach.
+	
+3.2-Non-blocking calls
+	- fork(fn, ...args)
+		Creates an Effect description that instructs the middleware to perform a non-blocking call on fn,
+		the middleware doesn't suspend the Generator while waiting for the result of fn. Instead as soon as fn is invoked, the Generator resumes immediately.
+		. fn: Function - A Generator function, or normal function which either returns a Promise as result, or any other value.
+		
+	Cancelling a non-blocking task
+		'cancel' Effect won't brutally kill our authorize task. Instead, it'll give it a chance to perform its cleanup logic. 
+		The cancelled task can handle any cancellation logic (as well as any other type of completion) in its finally block. 
+		Since a finally block execute on any type of completion (normal return, error, or forced cancellation), 
+		there is an Effect !!cancelled which you can use if you want handle cancellation in a special way:
+		Ex: 
+			if (yield cancelled()) {
+				// ... put special cancellation handling code here
+			}
+
+3.3-Running tasks in parallel
+	yield statement is great for representing asynchronous control flow in a linear style, but we also need to do things in parallel.
+	To achieve this use: 
+		yield all([effect1, effect2])
+	When we yield an array of effects, the generator is blocked until all the effects are resolved or as soon as one is rejected
+	
+3.4-Starting a race between multiple Effects
+	- race({effect1, effect2, ...})
+		Creates an Effect description that instructs the middleware to run a Race between multiple Effects
+		When resolving a race, the middleware automatically cancels all the losing Effects.
+		
+	Sometimes we start multiple tasks in parallel but we don't want to wait for all of them, we just need to get the !!!winner: the first one that resolves (or rejects)
+	Ex: https://redux-saga.js.org/docs/advanced/RacingEffects.html
+	
+3.7-Task cancellation
+	Once a task is !!!forked, you can abort its execution using yield cancel(task)
+	
+	- cancel(task)
+		Creates an Effect description that instructs the middleware to cancel a previously forked task.
+		To cancel a running task, the middleware will invoke return on the underlying Generator object. 
+		This will cancel the current Effect in the task and jump to the finally block (if defined).
+		
+		!!! When cancelling a Saga, all attached forks (sagas forked using yield fork()) will be cancelled. 
+		This means that cancellation effectively affects the whole execution tree that belongs to the cancelled task.
+		
+		!! There is another direction where the cancellation propagates to as well: 
+		  the joiners of a task (those blocked on a yield join(task)) will also be cancelled if the joined task is cancelled. 
+		  Similarly, any potential callers of those joiners will be cancelled as well (because they are blocked on an operation that has been cancelled from outside).
+		
+		cancel is a non-blocking Effect. i.e. the Saga executing it will resume immediately after performing the cancellation
+
+	- join(task)
+		Creates an Effect description that instructs the middleware to wait for the result of a previously forked task.
+		. task: Task - A Task object returned by a previous fork
+		
+	Automatic Cancellation !!!!
+		Besides manual cancellation there are cases where cancellation is triggered automatically
+		
+		1. In a race effect. All race competitors, except the winner, are automatically cancelled.
+
+		2. In a parallel effect (yield all([...])). 
+			The parallel effect is rejected as soon as one of the sub-effects is rejected (as implied by Promise.all). 
+			In this case, all the other sub-effects are automatically cancelled.
+
+3.8-redux-saga's fork model
+	
+	- spawn(fn, ...args)
+		Same as fork(fn, ...args) but creates a 'detached' task,
+		  which remains independent from its parent and acts like a top-level task
+		The parent !!will not wait for detached tasks to terminate!! before returning 
+		and all events which may affect the parent or the detached task are completely independent (error, cancellation).
+
+	In redux-saga you can dynamically fork tasks that execute in the background using 2 Effects
+	. fork is used to create 'attached' forks
+	. spawn is used to create 'detached' forks
+	
+	Attached forks (using fork)
+		remain attached to their parent by the following rules:
+		- Completion
+			A Saga terminates only after,
+			. It terminates its own body of instructions.
+			. All attached forks are themselves terminated.
+	
+		Error propagation | https://redux-saga.js.org/docs/advanced/ForkModel.html
+			a Saga aborts as soon as,
+			. Its main body of instructions throws an error
+			. An uncaught error was raised by one of its attached forks
+		
+		!!! A rule of thumb, you can't catch errors from forked tasks
+	
+	Detached forks (using spawn)
+		Detached forks live in their own execution context. 
+		A parent doesn't wait for detached forks to terminate.
+		Uncaught errors from spawned tasks are not bubbled up to the parent.
+		And cancelling a parent doesn't automatically cancel detached forks (!!you need to cancel them explicitly).
+		
+		In short, detached forks behave like root Sagas started directly using the middleware.run API.
+		
+3.9-Connecting Sagas to external Input/Output (COL) | https://redux-saga.js.org/docs/advanced/UsingRunSaga.html
+	When a Saga is started (either at startup or later dynamically), the middleware automatically connects its take/put to the store. 
+	The 2 Effects can be seen as a sort of Input/Output to the Saga.
+	
+3.10-Using Channels
+	Until now we've used the take and put effects to communicate with the Redux Store. 
+	Channels generalize those Effects to communicate with external event sources or between Sagas themselves.
+	They can also be used to queue specific actions from the Store.
+	
+	- actionChannel(pattern, [buffer])
+		Creates an effect that instructs the middleware to queue the actions matching pattern using an event channel. 
+		Optionally, you can provide a buffer to control buffering of the queued actions.
+		
+		By default, actionChannel buffers all incoming messages without limit. If you want a more control over the buffering, 
+		  you can supply a Buffer argument to the effect creator. 
+		Redux-Saga provides some common buffers (none, dropping, sliding) but you can also supply your own buffer implementation
+	
+	1. Using the actionChannel Effect | https://redux-saga.js.org/docs/advanced/Channels.html
+		
+	- eventChannel(subscribe, [buffer]) ???
+		Creates channel that will subscribe to an event source using the subscribe method. 
+		Incoming events from the event source will be queued in the channel until interested takers are registered.
+		. subscribe: Function used to subscribe to the underlying event source. 
+			The function must return an unsubscribe function to terminate the subscription.
+		. buffer: Buffer optional Buffer object to buffer messages on this channel. 
+			If not provided, messages will not be buffered on this channel.
+			
+		To notify the channel that the event source has terminated, you can notify the provided subscriber with an !! END
+		
+		Common Buffers
+		. buffers.none(): no buffering, new messages will be lost if there are no pending takers
+		. buffers.fixed(limit): new messages will be buffered up to limit. Overflow will raise an Error !!
+			Omitting a limit value will result in a limit of 10.
+		. buffers.expanding(initialSize): like fixed but Overflow will cause the buffer to expand dynamically.
+		. buffers.dropping(limit): same as fixed but Overflow will silently drop the messages.
+		. buffers.sliding(limit): same as fixed but Overflow will insert the new message at the end and drop the oldest message in the buffer.
+	
+	2. Using the eventChannel factory to connect to external events
+		Factory function like actionChannel.
+		creates a Channel for events but from event sources other than the Redux Store.
+		Subscriber function:
+			The role of the subscriber is to initialize the external event source,
+			  then routes all incoming events from the source to the channel by invoking the supplied emitter.
+			The subscriber returns an unsubscribe function. This is used by the channel to unsubscribe before the event source complete.
+			If we want to exit early before the event source complete (e.g. Saga has been cancelled) you can call chan.close() to close the channel and unsubscribe from the source.
+		
+	3. Using channels to communicate between Sagas
+		You can also directly create channels which are not connected to any source by default. 
+		You can then manually put on the channel. 
+		This is handy when you want to use a channel to communicate between sagas.
+		
+3.11-Root Saga Patterns | https://redux-saga.js.org/docs/advanced/RootSaga.html
+4.Recipes | https://redux-saga.js.org/docs/recipes/
