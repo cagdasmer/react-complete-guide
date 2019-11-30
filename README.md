@@ -9,6 +9,7 @@
 <a href="https://www.robertcooper.me/using-eslint-and-prettier-in-a-typescript-project ">ESLint & Prettier support</a><br/>
 
 <p>TypeScript configuration</p>
+
   ```json - .tsconfig
           {
             "compilerOptions": {
