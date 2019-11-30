@@ -1,2 +1,2 @@
-export type Ingredient = { id: string; title: string; amount: string };
+export type Ingredient = { id: string | undefined; title: string; amount: string };
 export type IngredientArray = Ingredient[];

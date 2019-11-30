@@ -6,7 +6,7 @@ import './IngredientList.css';
 
 interface IngredientListProps {
   ingredients: IngredientArray;
-  onRemoveItem(id: string): void;
+  onRemoveItem(id: string | undefined): void;
 }
 
 const IngredientList: React.FC<IngredientListProps> = props => {
@@ -14,17 +14,21 @@ const IngredientList: React.FC<IngredientListProps> = props => {
     <section className="ingredient-list">
       <h2>Loaded Ingredients</h2>
       <ul>
-        {props.ingredients.map(ig => (
-          <li
-            key={ig.id}
-            onClick={(): void => {
-              props.onRemoveItem(ig.id);
-            }}
-          >
-            <span>{ig.title}</span>
-            <span>{ig.amount}</span>
-          </li>
-        ))}
+        {props.ingredients ? (
+          props.ingredients.map(ig => (
+            <li
+              key={ig.id}
+              onClick={(): void => {
+                props.onRemoveItem(ig.id);
+              }}
+            >
+              <span>{ig.title}</span>
+              <span>{ig.amount}x</span>
+            </li>
+          ))
+        ) : (
+          <ul></ul>
+        )}
       </ul>
     </section>
   );

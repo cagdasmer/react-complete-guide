@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import Card from '../UI/Card';
 import './IngredientForm.css';
-import Ingredients from './Ingredients';
 import { Ingredient } from '../../types/types';
 
 interface IngredientFormProps {
@@ -15,7 +14,7 @@ const IngredientForm: React.FC<IngredientFormProps> = React.memo(props => {
 
   const submitHandler = (event: React.FormEvent): void => {
     event.preventDefault();
-    props.onAddIngredient({ id: Math.random.toString(), title, amount });
+    props.onAddIngredient({ id: undefined, title, amount });
   };
 
   return (
