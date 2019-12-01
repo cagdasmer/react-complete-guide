@@ -1,20 +1,24 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import Card from '../UI/Card';
+import LoadingIndicator from '../UI/LoadingIndicator';
 import './IngredientForm.css';
 import { Ingredient } from '../../types/types';
 
 interface IngredientFormProps {
   onAddIngredient(ingredient: Ingredient): void;
+  isLoading: boolean;
 }
 
 const IngredientForm: React.FC<IngredientFormProps> = React.memo(props => {
+  const { onAddIngredient, isLoading } = props;
   const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');
+  console.log('RENDERING FORM');
 
   const submitHandler = (event: React.FormEvent): void => {
     event.preventDefault();
-    props.onAddIngredient({ id: undefined, title, amount });
+    onAddIngredient({ id: undefined, title, amount });
   };
 
   return (
@@ -45,6 +49,7 @@ const IngredientForm: React.FC<IngredientFormProps> = React.memo(props => {
           </div>
           <div className="ingredient-form__actions">
             <button type="submit">Add Ingredient</button>
+            {isLoading && <LoadingIndicator />}
           </div>
         </form>
       </Card>
@@ -53,7 +58,8 @@ const IngredientForm: React.FC<IngredientFormProps> = React.memo(props => {
 });
 
 IngredientForm.propTypes = {
-  onAddIngredient: PropTypes.func.isRequired
+  onAddIngredient: PropTypes.func.isRequired,
+  isLoading: PropTypes.bool.isRequired
 };
 
 export default IngredientForm;
