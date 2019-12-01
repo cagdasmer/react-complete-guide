@@ -1,8 +1,9 @@
 import React, { useReducer, useState, useEffect, useCallback, useMemo, Reducer } from 'react';
-
+import ErrorModal from '../UI/ErrorModal';
 import IngredientForm from './IngredientForm';
 import IngredientList from './IngredientList';
 import Search from './Search';
+import useHttp from '../../hooks/http';
 
 import { Ingredient, IngredientArray } from '../../types/types';
 
@@ -63,18 +64,18 @@ const Ingredients: React.FC = () => {
     ingredientReducer,
     initialArg
   );
+  const { isLoading, error, data, sendRequest } = useHttp();
 
   const { ingredients, visibleIngredients } = ingredientsState;
-  const [isLoading, setLoading] = useState(false);
+  // const [isLoading, setLoading] = useState(false);
+  // const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState('');
 
   useEffect(() => {
-    setLoading(true);
     fetch('https://react-hooks-fbase.firebaseio.com/ingredients.json')
       .then(res => res.json())
       // Single state update from this block | one render cycle
       .then(data => {
-        setLoading(false);
         const receivedIngredients = data
           ? Object.keys(data).map(id => {
               return {
@@ -87,8 +88,6 @@ const Ingredients: React.FC = () => {
         dispatch({ type: 'SET', ingredients: receivedIngredients });
       })
       .catch(e => {
-        alert('Something went wrong!');
-        setLoading(false);
         console.log(e);
       });
   }, []);
@@ -98,7 +97,7 @@ const Ingredients: React.FC = () => {
   }, [ingredients, filter]);
 
   const addIngredientHandler = useCallback((ingredient: Ingredient): void => {
-    setLoading(true);
+    /* setLoading(true);
     fetch('https://react-hooks-fbase.firebaseio.com/ingredients.json', {
       method: 'POST',
       headers: {
@@ -114,16 +113,23 @@ const Ingredients: React.FC = () => {
         dispatch({ type: 'ADD', ingredient: { id: data.name, title, amount } });
       })
       .catch(e => {
-        alert('Something went wrong!');
+        setError('Something went wrong!');
         setLoading(false);
         console.log(e);
-      });
+      }); */
   }, []);
 
-  const onRemoveItem = useCallback((id: string): void => {
-    if (id) {
+  const onRemoveItem = useCallback(
+    (id: string): void => {
+      sendRequest(
+        `https://react-hooks-fbase.firebaseio.com/ingredients/${id}.json`,
+        'DELETE',
+        null
+      );
+
+      /* if (id) {
       setLoading(true);
-      fetch(`https://react-hooks-fbase.firebaseio.com/ingredients/${id}.json`, {
+      fetch(`https://react-hooks-fbase.firebaseio.com/ingredients.json/${id}.json`, {
         method: 'DELETE'
       })
         // Single state update from this block
@@ -132,15 +138,21 @@ const Ingredients: React.FC = () => {
           if (res.status === 200) {
             dispatch({ type: 'DELETE', id });
           } else {
-            alert('Something went wrong!');
+            setError('Something went wrong!');
           }
         })
         .catch(e => {
-          alert('Something went wrong!');
+          setError('Something went wrong!');
           setLoading(false);
           console.log(e);
         });
-    }
+    } */
+    },
+    [sendRequest]
+  );
+
+  const clearError = useCallback(() => {
+    // setError(null);
   }, []);
 
   // Alternative to React.memo
@@ -160,6 +172,7 @@ const Ingredients: React.FC = () => {
 
   return (
     <div className="App">
+      {error && <ErrorModal onClose={clearError}>{error}</ErrorModal>}
       <IngredientForm onAddIngredient={addIngredientHandler} isLoading={isLoading} />
 
       <section>

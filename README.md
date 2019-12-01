@@ -79,3 +79,12 @@ console.log(name); // ??? what gets printed? 'Max'?
 
       Effetcts of memoized functions should be considered before usage.
         Ex: Performing the comparison might be slower than re-rendering if the component is small enough.
+
+  <h4>Custom Hooks</h4>
+      
+      Any stateful feature can be used in hooks. ( useState, useEffect, useReducer )
+      Any component that that runs the hook will run the code as if it was written directly in the component itself.
+        Each functional component gets its own 'snapshot' of the hook!! Logic is shared, not the data.
+
+      Hook will get called whenever the component that uses the hook gets re-executed.
+      Component's state is retrieved automatically.
