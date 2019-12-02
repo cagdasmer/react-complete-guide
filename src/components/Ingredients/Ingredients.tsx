@@ -36,6 +36,7 @@ const ingredientReducer = (
         ingredients: action.ingredients
       };
     case 'ADD':
+      console.log(action.ingredient);
       return {
         ...prevState,
         ingredients: [...prevState.ingredients, action.ingredient]
@@ -64,7 +65,7 @@ const Ingredients: React.FC = () => {
     ingredientReducer,
     initialArg
   );
-  const { isLoading, error, data, sendRequest } = useHttp();
+  const { isLoading, error, data, identifier, sendRequest, extra } = useHttp();
 
   const { ingredients, visibleIngredients } = ingredientsState;
   // const [isLoading, setLoading] = useState(false);
@@ -96,57 +97,46 @@ const Ingredients: React.FC = () => {
     dispatch({ type: 'FILTER', filter });
   }, [ingredients, filter]);
 
-  const addIngredientHandler = useCallback((ingredient: Ingredient): void => {
-    /* setLoading(true);
-    fetch('https://react-hooks-fbase.firebaseio.com/ingredients.json', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(ingredient)
-    })
-      .then(res => res.json())
-      // Single state update from this block
-      .then(data => {
-        const { title, amount } = ingredient;
-        setLoading(false);
-        dispatch({ type: 'ADD', ingredient: { id: data.name, title, amount } });
-      })
-      .catch(e => {
-        setError('Something went wrong!');
-        setLoading(false);
-        console.log(e);
-      }); */
-  }, []);
+  useEffect(() => {
+    if (!isLoading && !error && extra) {
+      if (identifier === 'REMOVE_INGREDIENT' && typeof extra === 'string') {
+        dispatch({ type: 'DELETE', id: extra });
+      } else if (data && typeof extra !== 'string') {
+        const { name } = data;
+        // FIXME: Name is undefined
+        console.log(data);
+        dispatch({
+          type: 'ADD',
+          ingredient: { id: name, ...extra }
+        });
+      }
+    }
+  }, [data, extra, identifier, isLoading]);
+
+  const addIngredientHandler = useCallback(
+    (ingredient: Ingredient): void => {
+      sendRequest(
+        `https://react-hooks-fbase.firebaseio.com/ingredients.json`,
+        'POST',
+        JSON.stringify(ingredient),
+        'ADD_INGREDIENT',
+        ingredient
+      );
+    },
+    [sendRequest]
+  );
 
   const onRemoveItem = useCallback(
     (id: string): void => {
-      sendRequest(
-        `https://react-hooks-fbase.firebaseio.com/ingredients/${id}.json`,
-        'DELETE',
-        null
-      );
-
-      /* if (id) {
-      setLoading(true);
-      fetch(`https://react-hooks-fbase.firebaseio.com/ingredients.json/${id}.json`, {
-        method: 'DELETE'
-      })
-        // Single state update from this block
-        .then(res => {
-          setLoading(false);
-          if (res.status === 200) {
-            dispatch({ type: 'DELETE', id });
-          } else {
-            setError('Something went wrong!');
-          }
-        })
-        .catch(e => {
-          setError('Something went wrong!');
-          setLoading(false);
-          console.log(e);
-        });
-    } */
+      if (id) {
+        sendRequest(
+          `https://react-hooks-fbase.firebaseio.com/ingredients/${id}.json`,
+          'DELETE',
+          null,
+          'REMOVE_INGREDIENT',
+          id
+        );
+      }
     },
     [sendRequest]
   );
