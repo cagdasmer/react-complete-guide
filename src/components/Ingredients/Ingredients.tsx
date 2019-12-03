@@ -125,7 +125,7 @@ const Ingredients: React.FC = () => {
     (id: string): void => {
       if (id) {
         sendRequest(
-          `https://react-hooks-fbase.firebaseio.com/ingredients.json/${id}.json`,
+          `https://react-hooks-fbase.firebaseio.com/ingredients/${id}.json`,
           'DELETE',
           null,
           'REMOVE_INGREDIENT',
