@@ -36,7 +36,6 @@ const ingredientReducer = (
         ingredients: action.ingredients
       };
     case 'ADD':
-      console.log(action.ingredient);
       return {
         ...prevState,
         ingredients: [...prevState.ingredients, action.ingredient]
@@ -65,7 +64,7 @@ const Ingredients: React.FC = () => {
     ingredientReducer,
     initialArg
   );
-  const { isLoading, error, data, identifier, sendRequest, extra } = useHttp();
+  const { isLoading, error, data, identifier, extra, sendRequest, clear } = useHttp();
 
   const { ingredients, visibleIngredients } = ingredientsState;
   // const [isLoading, setLoading] = useState(false);
@@ -75,7 +74,6 @@ const Ingredients: React.FC = () => {
   useEffect(() => {
     fetch('https://react-hooks-fbase.firebaseio.com/ingredients.json')
       .then(res => res.json())
-      // Single state update from this block | one render cycle
       .then(data => {
         const receivedIngredients = data
           ? Object.keys(data).map(id => {
@@ -102,14 +100,13 @@ const Ingredients: React.FC = () => {
       if (identifier === 'REMOVE_INGREDIENT' && typeof extra === 'string') {
         dispatch({ type: 'DELETE', id: extra });
       } else if (data && typeof extra !== 'string') {
-        extra.id = data.name;
         dispatch({
           type: 'ADD',
-          ingredient: { ...extra }
+          ingredient: { ...extra, id: data.name }
         });
       }
     }
-  }, [data, extra, identifier, isLoading]);
+  }, [data, extra, identifier, isLoading, error]);
 
   const addIngredientHandler = useCallback(
     (ingredient: Ingredient): void => {
@@ -128,7 +125,7 @@ const Ingredients: React.FC = () => {
     (id: string): void => {
       if (id) {
         sendRequest(
-          `https://react-hooks-fbase.firebaseio.com/ingredients/${id}.json`,
+          `https://react-hooks-fbase.firebaseio.com/ingredients.json/${id}.json`,
           'DELETE',
           null,
           'REMOVE_INGREDIENT',
@@ -139,28 +136,19 @@ const Ingredients: React.FC = () => {
     [sendRequest]
   );
 
-  const clearError = useCallback(() => {
-    // setError(null);
-  }, []);
-
   // Alternative to React.memo
   const memoIngredientList = useMemo(
     () => <IngredientList ingredients={visibleIngredients} onRemoveItem={onRemoveItem} />,
     [visibleIngredients, onRemoveItem]
   );
 
-  /* useCallback memoizes the function. ( Cache )
-   Therefore it won't change unless the filter changes. ( Function won't be re-created )
-   Meaning no unnecessary re-render of the search component because of 
-   its dependency to this function. 
-   The parent component will use the cached function. */
   const filterInputHandler = useCallback((filter: string): void => {
     setFilter(filter);
   }, []);
 
   return (
     <div className="App">
-      {error && <ErrorModal onClose={clearError}>{error}</ErrorModal>}
+      {error && <ErrorModal onClose={clear}>{error}</ErrorModal>}
       <IngredientForm onAddIngredient={addIngredientHandler} isLoading={isLoading} />
 
       <section>

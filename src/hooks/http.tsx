@@ -1,5 +1,5 @@
 import { useReducer, useCallback, Reducer } from 'react';
-import { Ingredient, IgAddResponse } from '../types/types';
+import { Ingredient } from '../types/types';
 
 type HttpData = any;
 type HttpExtra = Ingredient | string | null | undefined;
@@ -30,9 +30,18 @@ interface HttpHookResponse {
     identifier: string | null,
     extra?: HttpExtra
   ): void;
+  clear(): void;
 }
 
 type HttpReducer = Reducer<HttpState, HttpAction>;
+
+const initialState = {
+  isLoading: false,
+  error: null,
+  data: null,
+  identifier: null,
+  extra: null
+};
 
 const httpReducer = (curHttpState: HttpState, action: HttpAction): HttpState => {
   switch (action.type) {
@@ -48,20 +57,18 @@ const httpReducer = (curHttpState: HttpState, action: HttpAction): HttpState => 
     case 'ERROR':
       return { ...curHttpState, isLoading: false, error: action.errorMessage };
     case 'CLEAR':
-      return { ...curHttpState, error: null };
+      return initialState;
     default:
       throw new Error('Should not be reached!');
   }
 };
 
 const useHttp = (): HttpHookResponse => {
-  const [httpState, dispatchHttp] = useReducer<HttpReducer>(httpReducer, {
-    isLoading: false,
-    error: null,
-    data: null,
-    identifier: null,
-    extra: null
-  });
+  const [httpState, dispatchHttp] = useReducer<HttpReducer>(httpReducer, initialState);
+
+  const clear = useCallback((): void => {
+    dispatchHttp({ type: 'CLEAR' });
+  }, []);
 
   const sendRequest = useCallback(
     (
@@ -79,13 +86,17 @@ const useHttp = (): HttpHookResponse => {
           'Content-Type': 'application/json'
         }
       })
-        .then(res => res.json())
+        .then(res => {
+          if (res.status !== 200) {
+            throw new Error();
+          }
+          res.json();
+        })
         .then(data => {
           dispatchHttp({ type: 'RESPONSE', data, extra });
         })
         .catch(e => {
           dispatchHttp({ type: 'ERROR', errorMessage: 'Something went wrong!' });
-          console.log(e);
         });
     },
     []
@@ -97,7 +108,8 @@ const useHttp = (): HttpHookResponse => {
     error: httpState.error,
     identifier: httpState.identifier,
     extra: httpState.extra,
-    sendRequest
+    sendRequest,
+    clear
   };
 };
 
