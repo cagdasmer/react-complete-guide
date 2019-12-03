@@ -102,12 +102,10 @@ const Ingredients: React.FC = () => {
       if (identifier === 'REMOVE_INGREDIENT' && typeof extra === 'string') {
         dispatch({ type: 'DELETE', id: extra });
       } else if (data && typeof extra !== 'string') {
-        const { name } = data;
-        // FIXME: Name is undefined
-        console.log(data);
+        extra.id = data.name;
         dispatch({
           type: 'ADD',
-          ingredient: { id: name, ...extra }
+          ingredient: { ...extra }
         });
       }
     }
